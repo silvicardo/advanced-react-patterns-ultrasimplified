@@ -1,4 +1,5 @@
 import React, {useState} from 'react'
+import mojs from 'mo-js';
 import styles from './index.css';
 
 const initialState = {
@@ -11,20 +12,42 @@ const initialState = {
 
 const withClapAnimation = (WrappedComponent) => {
    class WithClapAnimation extends React.Component {
-
-     animate = () => {
-       console.log('')
+      animationTimeline = new mojs.Timeline();
+     state = {
+       animationTimeline: this.animationTimeline,
      };
 
-    render() {
-      return (<WrappedComponent {...this.props} animate={this.animate}/>)
+     componentDidMount() {
+
+
+       //what happens on each animation call
+       const scaleButton = new mojs.Html({
+         el: '#clap',
+         duration : 300,
+         scale : { 1.3 : 1},
+         easing: mojs.easing.ease.out,
+       });
+
+       //initial scale correction
+       const clap = document.getElementById('clap');
+       clap.style.transform = 'scale(1,1)';
+
+       //animation timeline accepts array of animations
+       const newAnimationTimeline = this.animationTimeline.add([scaleButton]);
+       this.setState({animationTimeline : newAnimationTimeline});
+
+     }
+
+
+     render() {
+      return (<WrappedComponent {...this.props} animationTimeline={this.state.animationTimeline}/>)
     }
   }
   return WithClapAnimation;
 };
 
 //COMPONENTS
-const MediumClap = ({animate}) => {
+const MediumClap = ({animationTimeline}) => {
 
   const MAX_CLAPS = 50;
 
@@ -32,7 +55,7 @@ const MediumClap = ({animate}) => {
   const {count, countTotal, isClicked} = clapState;
 
   const handleClapClick = () => {
-    animate();
+    animationTimeline.replay();
     setClapState(({count,countTotal }) => ({
       isClicked: true,
       count: Math.min(count + 1, MAX_CLAPS),
@@ -41,7 +64,7 @@ const MediumClap = ({animate}) => {
   };
 
 
-  return <button className={styles.clap} onClick={handleClapClick}>
+  return <button id={'clap'} className={styles.clap} onClick={handleClapClick}>
     <ClapIcon isClicked={isClicked}  />
     <ClapCount count={count} />
     <CounTotal countTotal={countTotal} />
