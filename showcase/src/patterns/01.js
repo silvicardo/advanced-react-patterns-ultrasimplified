@@ -7,7 +7,24 @@ const initialState = {
   isClicked: false,
 };
 
-const MediumClap = () => {
+//HOCs
+
+const withClapAnimation = (WrappedComponent) => {
+   class WithClapAnimation extends React.Component {
+
+     animate = () => {
+       console.log('')
+     };
+
+    render() {
+      return (<WrappedComponent {...this.props} animate={this.animate}/>)
+    }
+  }
+  return WithClapAnimation;
+};
+
+//COMPONENTS
+const MediumClap = ({animate}) => {
 
   const MAX_CLAPS = 50;
 
@@ -15,6 +32,7 @@ const MediumClap = () => {
   const {count, countTotal, isClicked} = clapState;
 
   const handleClapClick = () => {
+    animate();
     setClapState(({count,countTotal }) => ({
       isClicked: true,
       count: Math.min(count + 1, MAX_CLAPS),
@@ -53,4 +71,14 @@ const CounTotal = ({countTotal}) => {
   return <span className={styles.total}>{countTotal}</span>
 };
 
-export default MediumClap;
+
+//Usage
+
+const Usage = () => {
+
+  const AnimatedMediumClap = withClapAnimation(MediumClap);
+
+  return <AnimatedMediumClap />
+};
+
+export default Usage;
