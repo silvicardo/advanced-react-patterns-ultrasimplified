@@ -130,7 +130,7 @@ const MediumClap = ({animationTimeline}) => {
   return <button id={'clap'} className={styles.clap} onClick={handleClapClick}>
     <ClapIcon isClicked={isClicked}  />
     <ClapCount count={count} />
-    <CounTotal countTotal={countTotal} />
+    <CountTotal countTotal={countTotal} />
   </button>
 };
 
@@ -153,7 +153,7 @@ const ClapCount = ({count}) => {
   return <span id={'clap-count'} className={styles.count}>+ {count}</span>
 };
 
-const CounTotal = ({countTotal}) => {
+const CountTotal = ({countTotal}) => {
   return <span id={'clap-count-total'} className={styles.total}>{countTotal}</span>
 };
 
