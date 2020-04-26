@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useRef} from 'react'
 import mojs from 'mo-js';
 import styles from './index.css';
 
@@ -14,20 +14,24 @@ const useClapAnimation = () => {
 
   const [animationTimeline, setAnimationTimeline] = useState(() => new mojs.Timeline());
 
+  const clapRef = useRef();
+  const clapCountRef = useRef();
+  const clapCountTotalRef = useRef();
+
   useEffect(() => {
 
     const timelineDuration = 300;
 
     //what happens on each animation call
     const scaleButton = new mojs.Html({
-      el: '#clap',
+      el: clapRef.current,
       duration : timelineDuration,
       scale : { 1.3 : 1},
       easing: mojs.easing.ease.out,
     });
 
     const countTotalAnimation = new mojs.Html({
-      el : '#clap-count-total',
+      el : clapCountTotalRef.current,
       opacity: {0: 1},
       delay: 3 * timelineDuration / 2,
       duration : timelineDuration,
@@ -35,7 +39,7 @@ const useClapAnimation = () => {
     });
 
     const countAnimation = new mojs.Html({
-      el : '#clap-count',
+      el : clapCountRef.current,
       opacity: {0: 1 },
       y: {0 : -30},
       duration : timelineDuration,
@@ -46,7 +50,7 @@ const useClapAnimation = () => {
     });
 
     const triangleBurst = new mojs.Burst({
-      parent: '#clap',
+      parent: clapRef.current,
       radius: {50 : 95}, //from : to (px)
       count: 5,
       angle: 30,
@@ -64,7 +68,7 @@ const useClapAnimation = () => {
     });
 
     const circleBurst = new mojs.Burst({
-      parent: '#clap',
+      parent: clapRef.current,
       radius: {50 : 75},
       angle: 25,
       duration: timelineDuration,
@@ -80,11 +84,9 @@ const useClapAnimation = () => {
 
 
     //initial scale correction
-    const clap = document.getElementById('clap');
-    clap.style.transform = 'scale(1,1)';
+    clapRef.current.style.transform = 'scale(1,1)';
 
-    const countTotal = document.getElementById('clap-count-total');
-    countTotal.style.opacity= '0';
+    clapCountTotalRef.current.style.opacity= '0';
 
     //animation timeline accepts array of animations
     const newAnimationTimeline = animationTimeline.add([
@@ -98,7 +100,7 @@ const useClapAnimation = () => {
     setAnimationTimeline(newAnimationTimeline);
   }, []);
 
-  return [animationTimeline];
+  return [animationTimeline, clapRef, clapCountRef, clapCountTotalRef];
 };
 
 //COMPONENTS
@@ -107,7 +109,8 @@ const MediumClap = (props) => {
   const MAX_CLAPS = 50;
 
   const [clapState, setClapState] = useState(initialState);
-  const [animationTimeline] = useClapAnimation();
+  const [animationTimeline, clapRef, clapCountRef, clapCountTotalRef] = useClapAnimation();
+
   const {count, countTotal, isClicked} = clapState;
 
   const handleClapClick = () => {
@@ -120,11 +123,13 @@ const MediumClap = (props) => {
   };
 
 
-  return <button id={'clap'} className={styles.clap} onClick={handleClapClick}>
-    <ClapIcon isClicked={isClicked}  />
-    <ClapCount count={count} />
-    <CounTotal countTotal={countTotal} />
-  </button>
+  return (
+      <button ref={clapRef} className={styles.clap} onClick={handleClapClick}>
+        <ClapIcon isClicked={isClicked}  />
+        <ClapCount count={count}  ref={clapCountRef} />
+        <CounTotal countTotal={countTotal} ref={clapCountTotalRef} />
+      </button>
+  )
 };
 
 //subcomponents
@@ -142,13 +147,13 @@ const ClapIcon = ({isClicked}) => {
   </span>
 };
 
-const ClapCount = ({count}) => {
-  return <span id={'clap-count'} className={styles.count}>+ {count}</span>
-};
+const ClapCount = React.forwardRef(({count}, ref) => {
+  return <span ref={ref} className={styles.count}>+ {count}</span>
+});
 
-const CounTotal = ({countTotal}) => {
-  return <span id={'clap-count-total'} className={styles.total}>{countTotal}</span>
-};
+const CounTotal = React.forwardRef(({countTotal}, ref) => {
+  return <span ref={ref} className={styles.total}>{countTotal}</span>
+});
 
 
 //Usage
